@@ -1,71 +1,89 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flavour_track/pages/homePage.dart';
 import 'package:flavour_track/signIn.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-class SignUp extends StatelessWidget {
+class SignUp extends StatefulWidget {
   const SignUp({Key? key}) : super(key: key);
 
   @override
+  _SignUpState createState() => _SignUpState();
+}
+
+class _SignUpState extends State<SignUp> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  @override
   Widget build(BuildContext context) {
-    final FirebaseAuth _auth = FirebaseAuth.instance;
-    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-    late String emailValue = "";
-    late String passwordValue = "";
-
-    final _formKey = GlobalKey<FormState>();
-    String _pass = "";
-
-    return Scaffold(
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Row(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          "Hey",
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.grey.shade500,
+    return SafeArea(
+      child: Scaffold(
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            "Hey",
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.grey.shade500,
+                            ),
                           ),
-                        ),
-                        const Text(
-                          " User !",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
+                          const Text(
+                            " User !",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      "You have been missed 🥺",
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.grey.shade500,
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      Text(
+                        "You have been missed 🥺",
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: Form(
-              key: _formKey,
+            Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(10),
                     child: TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        fillColor: Colors.grey.shade300,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        labelText: 'Enter your Name',
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: TextFormField(
+                      controller: _emailController,
                       decoration: InputDecoration(
                         fillColor: Colors.grey.shade300,
                         filled: true,
@@ -74,21 +92,12 @@ class SignUp extends StatelessWidget {
                         ),
                         labelText: 'Enter your email',
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!value.contains("@gmail.com")) {
-                          return 'Please include @gmail.com in your email';
-                        }
-                        emailValue = value.toString();
-                        return null;
-                      },
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(10),
                     child: TextFormField(
+                      controller: _passwordController,
                       obscureText: true,
                       decoration: InputDecoration(
                         fillColor: Colors.grey.shade300,
@@ -98,16 +107,6 @@ class SignUp extends StatelessWidget {
                         ),
                         labelText: 'Enter your password (length > 6)',
                       ),
-                      validator: (value) {
-                        if (value == null ||
-                            value.isEmpty ||
-                            value.length < 6) {
-                          return 'Please enter correct password';
-                        }
-                        _pass = value.toString();
-                        passwordValue = _pass;
-                        return null;
-                      },
                     ),
                   ),
                   Padding(
@@ -122,42 +121,11 @@ class SignUp extends StatelessWidget {
                         ),
                         labelText: 'Confirm your password',
                       ),
-                      validator: (value) {
-                        if (value == null ||
-                            value.isEmpty ||
-                            value.toString() != _pass) {
-                          return 'Please confirm your password';
-                        }
-                        return null;
-                      },
                     ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
                   GestureDetector(
-                    onTap: () async {
-                      if (_formKey.currentState!.validate()) {
-                        try {
-                          final UserCredential userCredential =
-                              await _auth.createUserWithEmailAndPassword(
-                            email: emailValue,
-                            password: passwordValue,
-                          );
-
-                          // Save user data to Firestore
-                          await _firestore
-                              .collection('users')
-                              .doc(userCredential.user!.uid)
-                              .set({
-                            'email': emailValue,
-                          });
-
-                          // Registration successful, proceed to the next screen
-                        } catch (e) {
-                          // Registration failed, handle the error
-                        }
-                      }
+                    onTap: () {
+                      _signUp();
                     },
                     child: Container(
                       padding: const EdgeInsets.all(10),
@@ -171,9 +139,7 @@ class SignUp extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -190,16 +156,131 @@ class SignUp extends StatelessWidget {
                             ),
                           );
                         },
-                        child: const Text("Let's sign in"),
+                        child: const Text("Sign In"),
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _signUp() async {
+    final String email = _emailController.text.trim();
+    final String password = _passwordController.text.trim();
+    final String userName = _nameController.text;
+
+    if (email.isEmpty) {
+      // Email field is empty
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error'),
+          content: const Text('Please enter your email.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    if (!email.contains('@')) {
+      // Invalid email format
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Error"),
+          content: const Text('Please enter a valid email address.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    if (password.isEmpty) {
+      // Password field is empty
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error'),
+          content: const Text('Please enter your password.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      // Password is too short
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error'),
+          content: const Text('Password should be at least 6 characters long.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    try {
+      final UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (userCredential.user != null) {
+        // User sign-up successful, create a document in Firestore
+        final uid = userCredential.user!.uid;
+
+        await _firestore.collection('users').doc(uid).set({
+          'username': userName,
+          'email': email,
+          'password': password,
+        });
+
+        // Sign up successful, proceed to the next screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const HomePage(),
+          ),
+        );
+      } else {
+        // User sign-up failed, handle the error
+        if (kDebugMode) {
+          print('Failed to sign up');
+        }
+      }
+    } catch (e) {
+      // Sign up failed, handle the error
+      if (kDebugMode) {
+        print("Failed to sign up: $e");
+      }
+    }
   }
 }

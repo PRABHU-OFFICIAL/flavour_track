@@ -1,62 +1,73 @@
+import 'package:flavour_track/pages/homePage.dart';
 import 'package:flavour_track/signUp.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class SignIn extends StatelessWidget {
+class SignIn extends StatefulWidget {
   const SignIn({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final _formKey = GlobalKey<FormState>();
+  _SignInState createState() => _SignInState();
+}
 
-    return Scaffold(
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Row(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          "Hey",
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.grey.shade500,
+class _SignInState extends State<SignIn> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Scaffold(
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            "Hey",
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.grey.shade500,
+                            ),
                           ),
-                        ),
-                        const Text(
-                          " User !",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
+                          const Text(
+                            " User !",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      "You have been missed 🥺",
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.grey.shade500,
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      Text(
+                        "Welcome back! Sign in to continue.",
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: Form(
-              key: _formKey,
+            Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(10),
                     child: TextFormField(
+                      controller: _emailController,
                       decoration: InputDecoration(
                         fillColor: Colors.grey.shade300,
                         filled: true,
@@ -65,20 +76,12 @@ class SignIn extends StatelessWidget {
                         ),
                         labelText: 'Enter your email',
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your username';
-                        }
-                        if (!value.contains("@gmail.com")) {
-                          return 'Please include @gmail.com in your email';
-                        }
-                        return null;
-                      },
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(10),
                     child: TextFormField(
+                      controller: _passwordController,
                       obscureText: true,
                       decoration: InputDecoration(
                         fillColor: Colors.grey.shade300,
@@ -88,24 +91,12 @@ class SignIn extends StatelessWidget {
                         ),
                         labelText: 'Enter your password',
                       ),
-                      validator: (value) {
-                        if (value == null ||
-                            value.isEmpty ||
-                            value.length < 6) {
-                          return 'Please enter your password';
-                        }
-                        return null;
-                      },
                     ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {
-                      if (_formKey.currentState!.validate()) {
-                        // Form is valid, perform login action
-                      }
+                      _signIn();
                     },
                     child: Container(
                       padding: const EdgeInsets.all(10),
@@ -114,14 +105,12 @@ class SignIn extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
-                        "Login",
+                        "Sign In",
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -138,16 +127,55 @@ class SignIn extends StatelessWidget {
                             ),
                           );
                         },
-                        child: const Text("Let's sign you up"),
+                        child: const Text("Sign Up"),
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _signIn() async {
+    final String email = _emailController.text.trim();
+    final String password = _passwordController.text;
+
+    try {
+      final UserCredential userCredential =
+          await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (userCredential.user != null) {
+        // User sign-in successful, create a document in Firestore
+        final uid = userCredential.user!.uid;
+        final username = userCredential.user!.email?.split('@')[0];
+
+        await _firestore.collection('users').doc(uid).set({
+          'username': username,
+          'email': email,
+          'password': password,
+        });
+
+        // Sign in successful, proceed to the next screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const HomePage(),
+          ),
+        );
+      } else {
+        // User sign-in failed, handle the error
+        print('Failed to sign in');
+      }
+    } catch (e) {
+      // Sign in failed, handle the error
+      print("Failed to sign in: $e");
+    }
   }
 }

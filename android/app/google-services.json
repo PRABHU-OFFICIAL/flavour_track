@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "957596927074",
+    "project_id": "flavour-track-757c6",
+    "storage_bucket": "flavour-track-757c6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:957596927074:android:aaca3999f11660d1483d3b",
+        "android_client_info": {
+          "package_name": "com.example.flavour_track"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "957596927074-3mco3vkhauf4difhgd65l8hj2tl8ss4r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC99mGARqL_jj_xT-8I3CEi8R_4GXGG34E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "957596927074-3mco3vkhauf4difhgd65l8hj2tl8ss4r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
