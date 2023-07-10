@@ -1,20 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:mongo_dart/mongo_dart.dart' as mongo;
 
 class MyListItems {
-  late String title = "";
-  late IconData? miniIcon = Icons.tag_faces_rounded;
-  late String subTitle = "";
+  late String name;
+  late String email;
+  late String state;
+  late String city;
 
-  MyListItems(this.miniIcon, this.title, this.subTitle);
+  MyListItems(this.name, this.email, this.state, this.city);
 }
-
-List<MyListItems> items = [
-  MyListItems(Icons.book, "Prakash", "Donated 25 meals"),
-  MyListItems(Icons.woman, "Prabhu", "Helped 124 people"),
-  MyListItems(Icons.attach_money_rounded, "Sakshi", "Raised 2.5k funds"),
-  MyListItems(Icons.woman, "Lisa", "Supported 25 families"),
-  MyListItems(Icons.fastfood, "Hima", "Served 230 meals"),
-];
 
 class CustomListTileItems extends StatefulWidget {
   const CustomListTileItems({Key? key}) : super(key: key);
@@ -24,20 +18,48 @@ class CustomListTileItems extends StatefulWidget {
 }
 
 class _CustomListTileItemsState extends State<CustomListTileItems> {
+  List<MyListItems> items = [];
   List<MyListItems> filteredItems = [];
+  bool isLoading = true;
 
   @override
   void initState() {
-    filteredItems = List.from(items);
+    fetchData();
     super.initState();
+  }
+
+  Future<void> fetchData() async {
+    final db = await mongo.Db.create(
+        "mongodb+srv://lituplayer:lll8117017978@cluster0.g186p7h.mongodb.net/?retryWrites=true&w=majority");
+    await db.open();
+
+    final collection = db.collection("ContributorsData");
+    final result = await collection.find().toList();
+
+    setState(() {
+      items = result.map((document) {
+        return MyListItems(
+          document['name'] ?? '',
+          document['email'] ?? '',
+          document['state'] ?? '',
+          document['city'] ?? '',
+        );
+      }).toList();
+      filteredItems = List.from(items);
+      isLoading = false;
+    });
+
+    await db.close();
   }
 
   void _searchItems(String value) {
     setState(() {
       filteredItems = items
           .where((item) =>
-              item.title.toLowerCase().contains(value.toLowerCase()) ||
-              item.subTitle.toLowerCase().contains(value.toLowerCase()))
+              item.name.toLowerCase().contains(value.toLowerCase()) ||
+              item.email.toLowerCase().contains(value.toLowerCase()) ||
+              item.state.toLowerCase().contains(value.toLowerCase()) ||
+              item.city.toLowerCase().contains(value.toLowerCase()))
           .toList();
     });
   }
@@ -56,7 +78,7 @@ class _CustomListTileItemsState extends State<CustomListTileItems> {
                   Icons.search,
                   color: Colors.blue,
                 ),
-                hintText: "Search your contributions",
+                hintText: 'Search your contributions',
                 hintStyle: const TextStyle(fontStyle: FontStyle.italic),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -64,54 +86,71 @@ class _CustomListTileItemsState extends State<CustomListTileItems> {
               ),
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: filteredItems.length,
-              itemBuilder: (context, index) => Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+          isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(), // Show loading indicator
+                )
+              : Expanded(
+                  child: ListView.builder(
+                    itemCount: filteredItems.length,
+                    itemBuilder: (context, index) => Card(
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(10),
+                        onTap: () {
+                          // Handle item tap
+                        },
+                        title: Text(
+                          filteredItems[index].name.toUpperCase(),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: Colors.pink),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              filteredItems[index].email,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'State: ${filteredItems[index].state}',
+                              style: const TextStyle(
+                                color: Colors.blue,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                            Text(
+                              'City: ${filteredItems[index].city}',
+                              style: const TextStyle(
+                                color: Colors.blue,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
+                        trailing: Icon(
+                          Icons.hail,
+                          color: Colors.grey[600],
+                          size: 30.0,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(10),
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.blue.withOpacity(0.2),
-                    ),
-                    child: Icon(
-                      filteredItems[index].miniIcon,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  title: Text(
-                    filteredItems[index].title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  subtitle: Text(
-                    filteredItems[index].subTitle,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                  trailing: Icon(
-                    Icons.keyboard_arrow_right,
-                    color: Colors.grey[600],
-                    size: 30.0,
-                  ),
-                  onTap: () {
-                    // Handle item tap
-                  },
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
