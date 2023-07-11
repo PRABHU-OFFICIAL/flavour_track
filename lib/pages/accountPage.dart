@@ -70,7 +70,7 @@ class _AccountPageState extends State<AccountPage> {
                   ),
                   SizedBox(
                     height: 600,
-                    width: MediaQuery.of(context).size.width * 0.9,
+                    width: MediaQuery.of(context).size.width * 0.7,
                     child: ListView.builder(
                       itemCount: usersData.length,
                       itemBuilder: (context, index) {
