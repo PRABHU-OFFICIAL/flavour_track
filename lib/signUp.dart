@@ -109,20 +109,6 @@ class _SignUpState extends State<SignUp> {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: TextFormField(
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        fillColor: Colors.grey.shade300,
-                        filled: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        labelText: 'Confirm your password',
-                      ),
-                    ),
-                  ),
                   GestureDetector(
                     onTap: () {
                       _signUp();
@@ -247,6 +233,18 @@ class _SignUpState extends State<SignUp> {
     }
 
     try {
+      showDialog(
+        context: context,
+        barrierDismissible:
+            false, // Prevent closing the dialog by tapping outside
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            title: Text('Registering...'),
+            content: SizedBox(
+                height: 100, width: 100, child: CircularProgressIndicator()),
+          );
+        },
+      );
       final UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: email,

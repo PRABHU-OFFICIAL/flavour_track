@@ -1,5 +1,6 @@
 import 'package:flavour_track/pages/homePage.dart';
 import 'package:flavour_track/signUp.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -145,6 +146,19 @@ class _SignInState extends State<SignIn> {
     final String password = _passwordController.text;
 
     try {
+      showDialog(
+        context: context,
+        barrierDismissible:
+            false, // Prevent closing the dialog by tapping outside
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            title: Text('Authenticating...'),
+            content: SizedBox(
+                height: 100, width: 100, child: CircularProgressIndicator()),
+          );
+        },
+      );
+
       final UserCredential userCredential =
           await _auth.signInWithEmailAndPassword(
         email: email,
@@ -162,6 +176,9 @@ class _SignInState extends State<SignIn> {
           'password': password,
         });
 
+        // Close the authentication dialog
+        Navigator.pop(context);
+
         // Sign in successful, proceed to the next screen
         Navigator.pushReplacement(
           context,
@@ -171,11 +188,17 @@ class _SignInState extends State<SignIn> {
         );
       } else {
         // User sign-in failed, handle the error
-        print('Failed to sign in');
+        if (kDebugMode) {
+          print('Failed to sign in');
+        }
+        Navigator.pop(context); // Close the authentication dialog
       }
     } catch (e) {
       // Sign in failed, handle the error
-      print("Failed to sign in: $e");
+      if (kDebugMode) {
+        print("Failed to sign in: $e");
+      }
+      Navigator.pop(context); // Close the authentication dialog
     }
   }
 }

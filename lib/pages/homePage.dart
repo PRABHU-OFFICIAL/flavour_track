@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flavour_track/pages/accountPage.dart';
 import 'package:flavour_track/pages/bookDonationPage.dart';
 import 'package:flavour_track/pages/clothesDonationPage.dart';
@@ -16,6 +18,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   var selectedIndex = 0;
+
   void getCurrentIndex(index) {
     setState(() {
       selectedIndex = index;
@@ -45,14 +48,14 @@ class _HomePageState extends State<HomePage> {
                       child: Row(
                         children: [
                           Text(
-                            "Hello",
+                            "Hello ",
                             style: TextStyle(
                                 fontSize: 20,
                                 color: Colors.pink,
                                 fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            " Prabhu !",
+                            "User",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 20),
                           ),
@@ -191,25 +194,25 @@ class _HomePageState extends State<HomePage> {
                               width: 20,
                             ),
                             CardContributor(
-                                name: "Prabhu",
-                                contribution: "Food Contribution",
-                                image: "assets/image1.jpeg",
+                                name: "Kuldip",
+                                contribution: "Books Contribution",
+                                image: "assets/image2.jpg",
                                 imageLink: "assets/dp.jpeg"),
                             SizedBox(
                               width: 20,
                             ),
                             CardContributor(
-                                name: "Prabhu",
-                                contribution: "Food Contribution",
-                                image: "assets/image1.jpeg",
+                                name: "Sai",
+                                contribution: "Clothes Contribution",
+                                image: "assets/image3.jpg",
                                 imageLink: "assets/dp.jpeg"),
                             SizedBox(
                               width: 20,
                             ),
                             CardContributor(
-                                name: "Prabhu",
-                                contribution: "Food Contribution",
-                                image: "assets/image1.jpeg",
+                                name: "Ritik",
+                                contribution: "Money Contribution",
+                                image: "assets/image4.jpg",
                                 imageLink: "assets/dp.jpeg"),
                             SizedBox(
                               width: 20,
@@ -324,7 +327,7 @@ class _HomePageState extends State<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Image.asset(
-                            "assets/collectionPoints.avif",
+                            "assets/resourceDrop.png",
                             height: 100,
                           ),
                           const SizedBox(

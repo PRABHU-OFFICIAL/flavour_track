@@ -59,6 +59,20 @@ class _BookDonationPageState extends State<BookDonationForm> {
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+
+      showDialog(
+        context: context,
+        barrierDismissible:
+            false, // Prevent closing the dialog by tapping outside
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            title: Text('Sit back and Hold a second...'),
+            content: SizedBox(
+                height: 100, width: 100, child: CircularProgressIndicator()),
+          );
+        },
+      );
+
       // Mongo-DB Connection
       final db = await mongo.Db.create(
           "mongodb+srv://lituplayer:lll8117017978@cluster0.g186p7h.mongodb.net/?retryWrites=true&w=majority");
@@ -76,6 +90,8 @@ class _BookDonationPageState extends State<BookDonationForm> {
       };
 
       try {
+        Navigator.of(context).pop();
+
         await collection.insert(document);
 
         // Show a success pop-up

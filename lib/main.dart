@@ -17,17 +17,41 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    User? currentUser = FirebaseAuth.instance.currentUser;
+  State<MyApp> createState() => _MyAppState();
+}
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: SafeArea(
-          child: currentUser != null ? const HomePage() : const SignIn()),
-    );
+class _MyAppState extends State<MyApp> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? currentuser;
+  bool isloggedin = false;
+
+  getUser() async {
+    User? user = _auth.currentUser;
+    await user?.reload();
+    user = _auth.currentUser;
+
+    if (user != null) {
+      setState(() {
+        currentuser = user;
+        isloggedin = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return isloggedin
+        ? const MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: HomePage(),
+          )
+        : const MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: SignIn(),
+          );
   }
 }
