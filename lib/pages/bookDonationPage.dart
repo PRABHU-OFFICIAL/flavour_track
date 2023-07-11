@@ -120,7 +120,7 @@ class _BookDonationPageState extends State<BookDonationPage>
                       ),
                       const SizedBox(height: 10),
                       SizedBox(
-                        height: 300,
+                        height: 260,
                         child: GridView.count(
                           crossAxisCount: 2,
                           mainAxisSpacing: 10,

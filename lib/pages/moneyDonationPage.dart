@@ -121,7 +121,7 @@ class _MoneyDonationPageState extends State<MoneyDonationPage>
                       ),
                       const SizedBox(height: 10),
                       SizedBox(
-                        height: 300,
+                        height: 250,
                         child: GridView.count(
                           crossAxisCount: 2,
                           mainAxisSpacing: 10,
