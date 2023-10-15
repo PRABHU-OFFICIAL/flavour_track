@@ -1,4 +1,4 @@
-# flavour_track
+# flavour_track {Open for contribution}
 
 A new Flutter project.
 
